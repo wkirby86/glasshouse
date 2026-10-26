@@ -1,5 +1,16 @@
 # Home-theme changes
 
+## v2.3.1 - Translation and accent compatibility
+
+- Key static weather labels and accessibility attributes using Glasshouse data-t attributes.
+- Leave script-owned fields as placeholders; translate runtime messages with t() and named placeholders.
+- Keep place names, coordinates, storage keys and API parameters as data, not translation strings.
+- Remove the theme's hard-coded app focus outline so stock/default and custom accents remain authoritative.
+- Rebuild the served Home HTML from source, preserving upstream code and saved configuration.
+- Add regression tests for string coverage, fallback text, and default/custom accent transitions.
+- Missing weather translations intentionally fall back to English; this release does not claim completed German/Spanish translations.
+- Upstream checks and workflows are not disabled or changed.
+
 ## v2.3 - Selectable weather location
 
 - Add explicit town/postcode search and region/country result selection.
