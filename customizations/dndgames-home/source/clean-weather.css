@@ -45,3 +45,35 @@
 /* DNDGAMES-CLOCK-WEATHER-V22: clock right; weather left. */
 #when{margin-left:auto;text-align:right}
 /* END DNDGAMES-CLOCK-WEATHER-V22 */
+
+/* DNDGAMES-WEATHER-LOCATION-V23 CSS */
+#dnd-weather .wx-place{min-width:0;-webkit-flex:1 1 auto;flex:1 1 auto;overflow:hidden;text-overflow:ellipsis}
+#dnd-weather .wx-country{-webkit-flex:0 0 auto;flex:0 0 auto}
+#dnd-wx-change{font:600 14px 'Manrope',sans-serif;margin-left:10px;padding:5px 9px;border:1px solid rgba(185,166,255,.35);border-radius:8px;
+  color:#ece7df;background:rgba(35,29,18,.55);cursor:pointer;-webkit-flex:0 0 auto;flex:0 0 auto}
+#dnd-wx-change:focus{outline:2px solid #e9ad55;outline-offset:3px}
+body[data-dnd-weather-focus="1"] #rows .tile.focus{outline-color:transparent}
+#dnd-weather-settings{position:absolute;left:0;top:0;width:1920px;height:1080px;z-index:20;background:rgba(5,4,9,.88);color:#ece7df}
+.dnd-location-panel{position:absolute;left:550px;top:140px;width:820px;height:800px;padding:36px;border:1px solid rgba(185,166,255,.35);border-radius:24px;background:#171320;box-shadow:0 12px 60px rgba(0,0,0,.5)}
+.dnd-location-panel h2{font-family:'Outfit',sans-serif;font-size:38px;font-weight:400;line-height:1.2;margin-right:64px}
+#dnd-location-current{font-size:18px;color:#a39d93;margin-top:8px;white-space:nowrap;text-overflow:ellipsis;overflow:hidden}
+.dnd-location-panel label{display:block;font-size:19px;font-weight:600;margin:26px 0 10px}
+.dnd-location-search-row{display:-webkit-flex;display:flex}
+#dnd-location-query{width:100%;min-width:0;-webkit-flex:1;flex:1;background:#0b0a10;color:#ece7df;border:1px solid #6b665e;border-radius:10px;padding:14px 16px;font:22px 'Manrope',sans-serif}
+.dnd-location-panel button{font:600 19px 'Manrope',sans-serif;padding:13px 18px;border:1px solid rgba(185,166,255,.4);border-radius:10px;background:#231d12;color:#ece7df;cursor:pointer}
+#dnd-location-search{margin-left:12px}
+#dnd-location-close{position:absolute;right:28px;top:26px;padding:4px 14px;font-size:32px;line-height:1.2;background:transparent}
+.dnd-location-panel button:focus,.dnd-location-panel input:focus{outline:3px solid #e9ad55;outline-offset:3px}
+.dnd-location-panel button:disabled{opacity:.38;cursor:default}
+#dnd-location-status{font-size:18px;color:#a39d93;line-height:1.45;height:62px;margin-top:16px;overflow:hidden}
+#dnd-location-status[data-error="1"]{color:#f0ba9d}
+#dnd-location-results{position:relative;height:300px;overflow-y:auto;padding:5px 6px}
+.dnd-location-panel .dnd-location-result{display:block;width:100%;text-align:left;margin:0 0 10px;background:#201b2a;padding:12px 16px}
+.dnd-location-result[aria-pressed="true"]{border-color:#e9ad55;background:#231d12}
+.location-name,.location-region{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.location-name{font-size:22px}
+.location-region{font-size:16px;font-weight:400;margin-top:5px;color:#a39d93}
+.dnd-location-actions{display:-webkit-flex;display:flex;-webkit-justify-content:flex-end;justify-content:flex-end;margin-top:20px}
+#dnd-location-save{margin-left:12px}
+.dnd-location-privacy{font-size:14px;color:#a39d93;line-height:1.5;margin-top:20px}
+/* END DNDGAMES-WEATHER-LOCATION-V23 CSS */
