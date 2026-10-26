@@ -1,29 +1,28 @@
-# Editable Home theme source
+# D&D Games Home customisation v2.3
 
-The source files here are the v2.2 presentation delta. Do not overwrite newer upstream Home HTML with the old generated TV package.
+Editable Home-view additions; upstream backend and takeover remain untouched.
 
-- `source/stacked.css`: bottom stacking, compact clock, tile styling.
-- `source/original-scroll.js`: reviewed upstream scrollTrack function, used as a compatibility guard.
-- `source/stacked-scroll.js`: short-row centring while keeping long-track scrolling.
-- `source/clean-weather.css`: label visibility and final clock/weather positions.
-- `source/weather-card.html`: visible town/country and weather markup/attribution.
-- `source/weather.js`: independent HTTPS weather widget, fixed Staines location, cache/refresh/error handling.
-- `build.py`: narrow source transformer and generated-output check.
-- `tests/`: local source tests, with an MIT upstream HTML fixture, NOT a deployment template.
+`source/stacked.css` and `stacked-scroll.js` retain the reviewed dock.
+`source/clean-weather.css` styles the card and location dialog.
+`source/weather-card.html` contains the card and accessible dialog.
+`source/weather.js` implements search, validation, local preferences and weather.
+`source/weather-key-hook.js` is the narrow bridge from Up at the top dock row to Change.
 
-From the repository root:
+Run from repository root:
 
-```bash
+```sh
 python3 customizations/dndgames-home/build.py check server/assets/home.html
 python3 customizations/dndgames-home/tests/test_theme.py
 ```
 
-After editing theme source, generate a separate candidate before replacing the served source:
+After source edits, generate to a distinct file, review, then replace the served HTML:
 
-```bash
-python3 customizations/dndgames-home/build.py build server/assets/home.html /tmp/glasshouse-home-candidate.html
+```sh
+python3 customizations/dndgames-home/build.py build server/assets/home.html /tmp/home-reviewed.html
 ```
 
-The output path must not already exist. Review the diff and run upstream/browser tests before replacing `server/assets/home.html`. The builder can strip its own marked additions and reapply source, but refuses older unmarked one-off custom patches. Preserve the upstream source as supplied by your chosen commit.
+The builder removes its own delimited previous additions before rebuilding, preserving the current upstream baseline. It can migrate the known v2.2 envelope; incompatible key/scroll/DOM changes cause a stop. Never copy an old generated Home page over a new upstream checkout.
 
-Python 3.10+ is required for the update kit. Node.js is required by its JavaScript syntax checks. Existing server runtime requirements are unchanged. The kit does not install development dependencies or run unreviewed package-manager hooks for you.
+Optional browser tests: install Playwright in a separate virtual environment and provide Chromium, then run `tests/location_browser_test.py`. It uses mocked APIs/storage, not a real TV or live weather. Results are written beneath ignored `tests/_test-output`.
+
+See `../../docs/DNDGAMES-HOME.md` for UI, privacy and deployment limitations. Original MIT licence retained.

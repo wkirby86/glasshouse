@@ -1,30 +1,21 @@
-## Summary
+# Home v2.3: selectable weather location
 
-Integrate D&D Games Home Edition v2.2 into this fork while retaining upstream Glasshouse backend, privacy tooling and Home takeover.
+## Summary
+A Home-screen presentation enhancement: add Change location to the existing weather card. Search a town/postcode, choose a region/country match, then save. Staines stays the default. No backend, Home takeover or firmware changes.
 
 ## Changes
+- Search dialog, explicit save/cancel, keyboard/pointer/remote controls.
+- Per-Home-webview local preference and coordinate/timezone-specific cache.
+- Request cancellation and generation guards prevent old results overwriting a new location.
+- Offline, invalid data, storage denial, rate-limit and no-result handling.
+- Top-right clock, top-left weather, dock, hidden-item filtering and wallpapers retained.
+- README/docs updated; location is no longer described as fixed.
 
-- Bottom-stacked dock with centred short tracks and existing long-track scrolling.
-- Compact top-right clock/date and top-left Staines-upon-Thames weather.
-- Hide normal-view row headings, keeping Arrange controls and hidden-app filtering.
-- Rounded translucent tiles; hide the large last-opened panel.
-- Add maintainable source, build checks, local tests, README introduction and change history.
+## Validation
+- Source round-trip/preservation tests and mocked-browser regression suite included.
+- Review the updater's changes.patch and run this checkout's upstream test suite.
+- [ ] Physical LG TV: on-screen keyboard, remote navigation, search/save and reboot persistence.
+- [ ] App/HDMI launching, hidden apps, Arrange, Recents and Home takeover verified.
 
-## Deliberately unchanged
-
-Backend APIs, Home takeover, app launch handlers, persisted home.json, installed wallpapers, privacy settings, upstream licence, package/server version and release/update workflows.
-
-## Known limitations
-
-Weather is fixed to Staines-upon-Thames (Celsius/mph/Europe-London); no location selector is included. Forecasts contact Open-Meteo and require internet access. Existing Home takeover compatibility constraints still apply. Newer upstream baselines require source, browser and hardware review.
-
-## Validation - fill in before marking ready
-
-- [ ] Inspect full source diff and recorded base commit.
-- [ ] Custom build consistency check and source tests pass.
-- [ ] Target checkout's upstream test/lint/security checks pass.
-- [ ] Browser tests cover navigation, overflow, Arrange, hidden items and weather failures.
-- [ ] Physical-TV tests cover Home button, app/input launch and full reboot.
-- [ ] No private photos, configuration, tokens, SSH material or test credentials staged.
-
-Target this pull request at **wkirby86/glasshouse**, not the upstream maintainer's repository, unless separately agreed.
+## Limitations
+Storage is local to the TV Home webview, not synced with a PC dashboard or stored in home.json. Clearing webview storage resets the default. Postcode coverage depends on the search provider. External search/weather requests require internet. No weather on/off toggle is added. Do not label this a backend or firmware upgrade; v2.3 is the Home-theme version.

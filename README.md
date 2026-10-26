@@ -2,19 +2,19 @@
 
 # Glasshouse
 
-<!-- DNDGAMES-FORK-README-V22 -->
-## D&D Games Home Edition - v2.2
+<!-- DNDGAMES-FORK-README-V23 -->
+## D&D Games Home Edition - v2.3
 
-This is **wkirby86's custom Home-screen fork** of [Glasshouse by rorygallagher2024](https://github.com/rorygallagher2024/glasshouse), not an official upstream release. The core dashboard, privacy tools and Home takeover remain upstream Glasshouse.
+This fork adds **aesthetic customisations to Glasshouse's Home screen**, plus a small configurable weather widget. It is not a replacement TV operating system or an official upstream release. Glasshouse's backend, privacy tools and Home takeover are unchanged.
 
-The Home edition adds a bottom-stacked dock, centred short tile rows, translucent rounded tiles, hidden normal-view row headings, a smaller **top-right clock**, and a **top-left weather card**. It retains existing application visibility, row order, wallpaper uploads and remote-control logic, except for the reviewed short-row centring adjustment.
+The Home layout has a bottom-centred stacked dock, clean row presentation, a smaller top-right clock and a top-left weather card. Use **Change** on that card to search for a town/postcode, choose the correct region/country, and save. The remote can reach it with Up from the top dock row, or the Blue shortcut outside Arrange/Recents.
 
-**Weather in this release is fixed to Staines-upon-Thames, UK (Celsius / mph). There is no location selector.** Unlike the local-only core, the optional-to-use Home interface's weather widget makes direct HTTPS requests to Open-Meteo and needs internet access. It does not send TV credentials, application lists or photographs; the provider receives the forecast location and the connection's public IP. Weather data is model-based and attributed to Open-Meteo under CC BY 4.0. The widget itself starts automatically while this customised Home view is open; there is no on/off dashboard control in v2.2.
+**Staines-upon-Thames is the initial default, not a locked location.** Each TV Home webview saves its own choice locally; clearing that webview's storage resets it. Weather is model-based, uses Celsius/mph, and makes direct HTTPS requests to Open-Meteo; location search uses Open-Meteo/GeoNames. No automatic GPS location or credentials are sent. The provider can see the query, selected coordinates and connection IP. This version adds a location picker, not a weather on/off switch or dashboard settings page.
 
-See [the Home-edition guide](docs/DNDGAMES-HOME.md), [change history](customizations/dndgames-home/CHANGELOG.md), and [editable source and build instructions](customizations/dndgames-home/README.md). **2.2 is the Home theme version, not the Glasshouse server version.** Preserve the upstream licence and safety guidance below. Re-run tests when porting to newer upstream versions; a source check is not TV compatibility certification.
+See [the Home-edition guide](docs/DNDGAMES-HOME.md), [change history](customizations/dndgames-home/CHANGELOG.md) and [editable source](customizations/dndgames-home/README.md). **v2.3 is the Home-theme version, not the Glasshouse server version.** Retain upstream credits and safety guidance below.
 
 ---
-<!-- END DNDGAMES-FORK-README-V22 -->
+<!-- END DNDGAMES-FORK-README-V23 -->
 
 
 **Own the glass.** A dashboard, privacy controls and Home Assistant bridge for rooted LG webOS TVs.

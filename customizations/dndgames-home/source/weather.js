@@ -1,27 +1,73 @@
-/* DNDGAMES-CLEAN-WEATHER-V21 SCRIPT
- * Independent ES5 widget. No Glasshouse API, remote-key, layout, or root changes.
- * Town-centre coordinates, NOT the user's address. Direct HTTPS, no API key,
- * no credentials or third-party executable code. Model-based weather data.
+/* DNDGAMES-WEATHER-LOCATION-V23 SCRIPT
+ * Weather preferences live in this Home webview's localStorage, not home.json.
+ * Search is explicit, via Open-Meteo/GeoNames; no GPS, API key or credentials.
+ * ES5. Core catalogue, hidden items, takeover and heartbeat stay independent.
  */
 (function () {
   'use strict';
-  if (window.__dndWeatherV21Started) return;
-  window.__dndWeatherV21Started = true;
+  if (window.__dndWeatherLocationV23) return;
+  window.__dndWeatherLocationV23 = true;
   var card = document.getElementById('dnd-weather');
   if (!card) return;
   var REFRESH_MS = 15 * 60 * 1000, MAX_AGE_MS = 2 * 60 * 60 * 1000;
   var RETRY_MS = 5 * 60 * 1000, TIMEOUT_MS = 10000;
-  var CACHE_KEY = 'dnd.glasshouse.weather.v21.staines';
-  var URL = 'https://api.open-meteo.com/v1/forecast?latitude=51.434&longitude=-0.5114' +
-    '&current=temperature_2m,apparent_temperature,is_day,weather_code,wind_speed_10m' +
-    '&daily=weather_code,temperature_2m_max,temperature_2m_min' +
-    '&temperature_unit=celsius&wind_speed_unit=mph&timezone=Europe%2FLondon&forecast_days=4';
+  var SETTINGS_KEY = 'dnd.glasshouse.weather.settings.v1';
+  var DEFAULT_LOCATION = { name: 'Staines-upon-Thames', country: 'United Kingdom',
+    countryCode: 'GB', region: 'England', latitude: 51.434, longitude: -0.5114, timezone: 'Europe/London' };
+  var location = DEFAULT_LOCATION;
   var saved = null, nextDue = 0, busy = false, failed = false, timer = null;
+  var forecastRequest = null, generation = 0;
+  var panel = document.getElementById('dnd-weather-settings');
+  var changeButton = document.getElementById('dnd-wx-change');
+  var searchInput = document.getElementById('dnd-location-query');
+  var searchButton = document.getElementById('dnd-location-search');
+  var saveButton = document.getElementById('dnd-location-save');
+  var resultsBox = document.getElementById('dnd-location-results');
+  var dialogOpen = false, controlFocused = false, selection = null, results = [];
+  var searchRequest = null, searchRevision = 0, searchBlockedUntil = 0;
+  var swallowed = {}, lastFocus = null;
   function el(id) { return document.getElementById('dnd-wx-' + id); }
   function text(id, value) { var e = el(id); if (e) e.textContent = value; }
   function numeric(n) { return typeof n === 'number' && isFinite(n); }
   function degrees(n) { return numeric(n) ? String(Math.round(n)) + '\u00b0' : '\u2014'; }
   function clockStamp(r) { return r.current.time.slice(11, 16); }
+  function safeText(s, max) { return typeof s === 'string' && s.length > 0 && s.length <= max && !/[\x00-\x1f\x7f]/.test(s); }
+  function validLocation(p) {
+    return !!(p && safeText(p.name, 120) && safeText(p.country, 120) &&
+      typeof p.countryCode === 'string' && /^[A-Z]{2}$/.test(p.countryCode) &&
+      typeof p.region === 'string' && p.region.length <= 120 && !/[\x00-\x1f\x7f]/.test(p.region) &&
+      numeric(p.latitude) && p.latitude >= -90 && p.latitude <= 90 &&
+      numeric(p.longitude) && p.longitude >= -180 && p.longitude <= 180 &&
+      typeof p.timezone === 'string' && p.timezone.length <= 100 &&
+      /^(auto|UTC|GMT|[A-Za-z_]+(?:\/[A-Za-z0-9_+\-]+){1,3})$/.test(p.timezone));
+  }
+  function cleanLocation(p) {
+    return {name:p.name,country:p.country,countryCode:p.countryCode,region:p.region,
+      latitude:p.latitude,longitude:p.longitude,timezone:p.timezone};
+  }
+  function locationKey(p) { return [p.latitude, p.longitude, p.timezone, 'celsius', 'mph'].join('|'); }
+  function cacheKey(p) { return 'dnd.glasshouse.weather.v23.' + locationKey(p); }
+  function readLocation() {
+    try {
+      var value = JSON.parse(localStorage.getItem(SETTINGS_KEY) || 'null');
+      if (value && value.version === 1 && validLocation(value.location)) return cleanLocation(value.location);
+    } catch (ignore) {}
+    return cleanLocation(DEFAULT_LOCATION);
+  }
+  function label(p) { return p.name + (p.region ? ', ' + p.region : '') + ', ' + p.country; }
+  function renderPlace() {
+    text('place', location.name); text('country', location.countryCode === 'GB' ? 'UK' : location.countryCode);
+    el('place').setAttribute('title', label(location));
+    card.setAttribute('aria-label', 'Weather for ' + label(location));
+    document.getElementById('dnd-location-current').textContent = 'Current: ' + label(location);
+  }
+  function forecastURL(p) {
+    return 'https://api.open-meteo.com/v1/forecast?latitude=' + encodeURIComponent(p.latitude) +
+      '&longitude=' + encodeURIComponent(p.longitude) +
+      '&current=temperature_2m,apparent_temperature,is_day,weather_code,wind_speed_10m' +
+      '&daily=weather_code,temperature_2m_max,temperature_2m_min' +
+      '&temperature_unit=celsius&wind_speed_unit=mph&timezone=' + encodeURIComponent(p.timezone) + '&forecast_days=4';
+  }
   function modelTime(r) {
     var m = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})/.exec(r.current.time);
     if (!m || !numeric(r.utc_offset_seconds)) return NaN;
@@ -108,13 +154,30 @@
     }
     days.style.display = days.childNodes.length ? '' : 'none';
     text('stamp', (cached ? 'Cached \u00b7 ' : 'Updated ') + clockStamp(r));
-    card.setAttribute('title', 'Model-based weather for Staines-upon-Thames. Times are Europe/London.');
+    card.setAttribute('title', 'Model-based weather for ' + location.name + '. Times: ' + location.timezone + '.');
   }
   function unavailable() {
     card.setAttribute('data-weather-state', 'unavailable');
     text('temp', '\u2014'); text('condition', 'Weather unavailable');
     text('feels', 'Celsius \u00b7 mph'); text('detail', 'Automatic retry; Home still works');
     text('stamp', 'No recent data'); el('days').innerHTML = ''; el('icon').innerHTML = icon('cloud');
+  }
+
+  function loading() {
+    card.setAttribute('data-weather-state', 'loading');
+    text('temp', '\u2014'); text('condition', 'Loading weather');
+    text('feels', 'Celsius \u00b7 mph'); text('detail', 'Connecting to Open-Meteo\u2026');
+    text('stamp', 'Waiting for data'); el('days').innerHTML = ''; el('icon').innerHTML = icon('cloud');
+  }
+  function readCache() {
+    saved = null;
+    try {
+      var previous = JSON.parse(localStorage.getItem(cacheKey(location)) || 'null');
+      if (previous && previous.locationKey === locationKey(location) && usable(previous)) {
+        saved = previous; nextDue = previous.savedAt + REFRESH_MS;
+      }
+    } catch (ignore) {}
+    if (saved) render(); else loading();
   }
   function schedule(ms) { clearTimeout(timer); timer = setTimeout(tick, ms); }
   function tick() {
@@ -123,14 +186,14 @@
     if (busy) return;
     if (Date.now() < nextDue) { schedule(Math.min(60000, nextDue - Date.now())); return; }
     busy = true;
-    var x, completed = false;
+    var x, completed = false, token = generation, requestKey = locationKey(location);
     function finish(ok, payload, rateLimited) {
-      if (completed) return;
-      completed = true; busy = false;
+      if (completed || token !== generation || requestKey !== locationKey(location)) return;
+      completed = true; busy = false; forecastRequest = null;
       if (ok) {
-        saved = { savedAt: Date.now(), payload: payload }; failed = false;
+        saved = {savedAt:Date.now(),payload:payload,locationKey:requestKey}; failed = false;
         nextDue = Date.now() + REFRESH_MS;
-        try { localStorage.setItem(CACHE_KEY, JSON.stringify(saved)); } catch (ignore) {}
+        try { localStorage.setItem(cacheKey(location), JSON.stringify(saved)); } catch (ignore) {}
         render();
       } else {
         failed = true; nextDue = Date.now() + (rateLimited ? REFRESH_MS : RETRY_MS);
@@ -139,27 +202,240 @@
       schedule(60000);
     }
     try {
-      x = new XMLHttpRequest(); x.open('GET', URL, true);
+      x = new XMLHttpRequest(); forecastRequest = x;
+      x.open('GET', forecastURL(location), true);
       x.timeout = TIMEOUT_MS; x.withCredentials = false;
       x.onload = function () {
         var r = null;
         try { r = JSON.parse(x.responseText); } catch (ignore) {}
-        var candidate = { savedAt: Date.now(), payload: r };
-        finish(x.status === 200 && usable(candidate), r, x.status === 429);
+        finish(x.status === 200 && usable({savedAt:Date.now(),payload:r}), r, x.status === 429);
       };
       x.onerror = x.ontimeout = x.onabort = function () { finish(false); };
       x.send(null);
     } catch (ignore) { finish(false); }
   }
-  try {
-    var previous = JSON.parse(localStorage.getItem(CACHE_KEY) || 'null');
-    if (usable(previous)) { saved = previous; nextDue = previous.savedAt + REFRESH_MS; render(); }
-  } catch (ignore) {}
-  el('icon').innerHTML = icon(saved ? weather(saved.payload.current.weather_code, saved.payload.current.is_day)[1] : 'cloud');
-  document.addEventListener('visibilitychange', function () { if (!document.hidden) schedule(1000); });
-  document.addEventListener('webOSRelaunch', function () { schedule(1000); });
+  function applyLocation(next) {
+    generation++;
+    if (forecastRequest) { try { forecastRequest.abort(); } catch (ignore) {} }
+    forecastRequest = null; busy = false; failed = false; nextDue = 0;
+    clearTimeout(timer);
+    var oldKey = cacheKey(location);
+    location = cleanLocation(next);
+    if (oldKey !== cacheKey(location)) {
+      try { localStorage.removeItem(oldKey); } catch (ignore) {}
+    }
+    renderPlace(); readCache(); schedule(150);
+  }
+  function status(message, error) {
+    var e = document.getElementById('dnd-location-status');
+    e.textContent = message; e.setAttribute('data-error', error ? '1' : '0');
+  }
+  function stopSearch() {
+    searchRevision++;
+    if (searchRequest) { try { searchRequest.abort(); } catch (ignore) {} }
+    searchRequest = null; searchButton.disabled = false;
+    resultsBox.setAttribute('aria-busy', 'false');
+  }
+  function allowed() {
+    var stage = document.getElementById('stage');
+    return stage && !/\b(arranging|recents)\b/.test(stage.className) && !document.hidden;
+  }
+  function focusControl() {
+    if (!allowed()) return false;
+    controlFocused = true;
+    document.body.setAttribute('data-dnd-weather-focus', '1');
+    changeButton.focus();
+    return true;
+  }
+  function leaveControl() {
+    controlFocused = false;
+    document.body.removeAttribute('data-dnd-weather-focus');
+    if (document.activeElement === changeButton) changeButton.blur();
+  }
+  function openDialog() {
+    if (!allowed()) return;
+    if (dialogOpen) { searchInput.focus(); return; }
+    lastFocus = document.activeElement;
+    dialogOpen = true; selection = null; results = [];
+    saveButton.disabled = true; resultsBox.innerHTML = ''; searchInput.value = location.name;
+    panel.style.display = 'block'; panel.setAttribute('aria-hidden', 'false');
+    document.body.setAttribute('data-dnd-weather-focus', '1');
+    renderPlace(); status('Enter a town or postcode, then choose Search.');
+    searchInput.focus(); searchInput.select();
+  }
+  function closeDialog(restoreFocus) {
+    if (!dialogOpen) return;
+    stopSearch(); dialogOpen = false; selection = null;
+    panel.style.display = 'none'; panel.setAttribute('aria-hidden', 'true');
+    if (document.activeElement && panel.contains(document.activeElement)) document.activeElement.blur();
+    if (restoreFocus !== false && lastFocus === changeButton) focusControl(); else leaveControl();
+  }
+  function searchLocations() {
+    if (!dialogOpen) return;
+    var query = searchInput.value.replace(/^\s+|\s+$/g, '');
+    if (query.length < 2 || query.length > 100 || /[\x00-\x1f\x7f]/.test(query)) {
+      status('Use 2 to 100 characters for a town or postcode.', true); return;
+    }
+    if (Date.now() < searchBlockedUntil) {
+      status('Search is temporarily limited. Please try again in a minute.', true); return;
+    }
+    stopSearch();
+    var token = searchRevision;
+    selection = null; results = []; saveButton.disabled = true; resultsBox.innerHTML = '';
+    searchButton.disabled = true; resultsBox.setAttribute('aria-busy', 'true');
+    status('Searching\u2026');
+    var x, done = false;
+    function complete(ok, response, code) {
+      if (done || token !== searchRevision || !dialogOpen) return;
+      done = true; searchRequest = null; searchButton.disabled = false;
+      resultsBox.setAttribute('aria-busy', 'false');
+      if (!ok) {
+        if (code === 429) searchBlockedUntil = Date.now() + 60000;
+        status(code === 429 ? 'Search is temporarily limited. Try again in a minute.' :
+          'Location search is unavailable. Your saved location has not changed.', true);
+        return;
+      }
+      var list = response.results || [];
+      for (var i = 0; i < Math.min(8, list.length); i++) {
+        var r = list[i], candidate = {name:r.name,country:r.country,countryCode:r.country_code,
+          region:r.admin1 || '',latitude:r.latitude,longitude:r.longitude,timezone:r.timezone || 'auto'};
+        if (validLocation(candidate)) results.push(cleanLocation(candidate));
+      }
+      if (!results.length) {
+        status('No matching locations. Try the nearest town, or add a country after a comma.'); return;
+      }
+      results.forEach(function (p, index) {
+        var b = document.createElement('button'); b.type = 'button'; b.className = 'dnd-location-result';
+        b.setAttribute('aria-pressed', 'false'); b.setAttribute('data-result', String(index));
+        var title = document.createElement('span'); title.className = 'location-name'; title.textContent = p.name;
+        var sub = document.createElement('span'); sub.className = 'location-region';
+        sub.textContent = (p.region ? p.region + ', ' : '') + p.country + ' \u00b7 ' + p.timezone;
+        b.appendChild(title); b.appendChild(sub);
+        b.addEventListener('click', function () { choose(index); }); resultsBox.appendChild(b);
+      });
+      status('Choose a location, then select Save location. Nothing changes until you save.');
+      var active = document.activeElement;
+      if (active === searchInput || active === searchButton || active === document.body) resultsBox.firstChild.focus();
+    }
+    try {
+      x = new XMLHttpRequest(); searchRequest = x;
+      x.open('GET', 'https://geocoding-api.open-meteo.com/v1/search?name=' + encodeURIComponent(query) +
+        '&count=8&language=en&format=json', true);
+      x.timeout = TIMEOUT_MS; x.withCredentials = false;
+      x.onload = function () {
+        var r = null;
+        try { r = JSON.parse(x.responseText); } catch (ignore) {}
+        complete(x.status === 200 && r && !r.error && (!r.results || Object.prototype.toString.call(r.results) === '[object Array]'), r, x.status);
+      };
+      x.onerror = x.ontimeout = x.onabort = function () { complete(false, null, 0); };
+      x.send(null);
+    } catch (ignore) { complete(false, null, 0); }
+  }
+  function choose(index) {
+    if (!results[index]) return;
+    selection = results[index];
+    var buttons = resultsBox.querySelectorAll('button');
+    for (var i = 0; i < buttons.length; i++) buttons[i].setAttribute('aria-pressed', i === index ? 'true' : 'false');
+    saveButton.disabled = false;
+    status('Selected: ' + label(selection) + '. Select Save location to apply.');
+    saveButton.focus();
+  }
+  function saveLocation() {
+    if (!selection || !validLocation(selection)) return;
+    var next = cleanLocation(selection), encoded = JSON.stringify({version:1,location:next});
+    try {
+      localStorage.setItem(SETTINGS_KEY, encoded);
+      if (localStorage.getItem(SETTINGS_KEY) !== encoded) throw new Error('Storage verification failed');
+    } catch (ignore) {
+      status('This Home view cannot save preferences. Location unchanged. Check browser storage and retry.', true);
+      return;
+    }
+    applyLocation(next); closeDialog(true);
+  }
+  function consume(e) {
+    e.preventDefault();
+    if (e.stopImmediatePropagation) e.stopImmediatePropagation(); else e.stopPropagation();
+    if (e.type === 'keydown') swallowed[e.keyCode] = true;
+  }
+  function focusables() {
+    var nodes = panel.querySelectorAll('input,button'), out = [];
+    for (var i = 0; i < nodes.length; i++) if (!nodes[i].disabled && nodes[i].offsetWidth) out.push(nodes[i]);
+    return out;
+  }
+  function stepFocus(delta) {
+    var nodes = focusables(), index = nodes.indexOf(document.activeElement);
+    if (!nodes.length) return;
+    index = (index + delta + nodes.length) % nodes.length;
+    nodes[index].focus();
+    if (nodes[index].className === 'dnd-location-result') {
+      var node = nodes[index], top = node.offsetTop;
+      if (top < resultsBox.scrollTop) resultsBox.scrollTop = top;
+      if (top + node.offsetHeight > resultsBox.scrollTop + resultsBox.clientHeight) resultsBox.scrollTop = top + node.offsetHeight - resultsBox.clientHeight;
+    }
+  }
+  function weatherKeys(e) {
+    var k = e.keyCode;
+    if (e.type === 'keyup') {
+      if (swallowed[k]) { delete swallowed[k]; consume(e); }
+      return;
+    }
+    if (!dialogOpen && k === 406 && allowed()) { consume(e); focusControl(); openDialog(); return; }
+    if (dialogOpen) {
+      if (k === 461 || k === 27) { consume(e); closeDialog(true); return; }
+      if (k === 9) { consume(e); stepFocus(e.shiftKey ? -1 : 1); return; }
+      if (k === 13) {
+        consume(e);
+        if (e.repeat) return;
+        if (document.activeElement === searchInput) searchLocations();
+        else if (document.activeElement && document.activeElement.tagName === 'BUTTON' && !document.activeElement.disabled) document.activeElement.click();
+        return;
+      }
+      if (k === 38 || k === 40 || ((k === 37 || k === 39) && document.activeElement !== searchInput)) {
+        consume(e); stepFocus(k === 38 || k === 37 ? -1 : 1); return;
+      }
+      // Typing and caret movement belong to the input, never to the launcher.
+      if (e.stopImmediatePropagation) e.stopImmediatePropagation(); else e.stopPropagation();
+      return;
+    }
+    if (controlFocused) {
+      if (k === 13) { consume(e); if (!e.repeat) openDialog(); }
+      else if (k === 40 || k === 461 || k === 27) { consume(e); leaveControl(); }
+      else if (k === 37 || k === 38 || k === 39) consume(e);
+    }
+  }
+  changeButton.addEventListener('click', openDialog);
+  changeButton.addEventListener('focus', function () { controlFocused = true; document.body.setAttribute('data-dnd-weather-focus', '1'); });
+  searchButton.addEventListener('click', searchLocations);
+  searchInput.addEventListener('input', function () {
+    stopSearch(); selection = null; results = []; saveButton.disabled = true; resultsBox.innerHTML = '';
+    status('Choose Search to find matching locations.');
+  });
+  saveButton.addEventListener('click', saveLocation);
+  document.getElementById('dnd-location-cancel').addEventListener('click', function () { closeDialog(true); });
+  document.getElementById('dnd-location-close').addEventListener('click', function () { closeDialog(true); });
+  panel.addEventListener('click', function (e) { if (e.target === panel) closeDialog(true); });
+  // Capture before Glasshouse's document handlers, without replacing them.
+  window.addEventListener('keydown', weatherKeys, true);
+  window.addEventListener('keyup', weatherKeys, true);
+  window.addEventListener('mousemove', function (e) {
+    if (controlFocused && !dialogOpen && !card.contains(e.target)) leaveControl();
+    if (dialogOpen) { if (e.stopImmediatePropagation) e.stopImmediatePropagation(); else e.stopPropagation(); }
+  }, true);
+  window.addEventListener('click', function (e) {
+    // Pointer movement back to the dock releases weather-button focus.
+    if (controlFocused && !dialogOpen && !card.contains(e.target)) leaveControl();
+  }, true);
+  panel.addEventListener('click', function (e) { e.stopPropagation(); });
+  card.addEventListener('click', function (e) { if (e.target === changeButton) e.stopPropagation(); });
+  window.DNDWeatherLocation = { focusControl: focusControl };
+  location = readLocation(); renderPlace(); readCache();
+  document.addEventListener('visibilitychange', function () {
+    if (document.hidden) { closeDialog(false); leaveControl(); stopSearch(); }
+    else schedule(1000);
+  });
+  document.addEventListener('webOSRelaunch', function () { closeDialog(false); leaveControl(); schedule(1000); });
   window.addEventListener('online', function () { nextDue = 0; schedule(1000); });
-  // Give the launcher's initial catalogue and watchdog heartbeat priority.
+  window.addEventListener('storage', function (e) { if (e.key === SETTINGS_KEY) { closeDialog(false); applyLocation(readLocation()); } });
   schedule(2000);
 }());
-/* END DNDGAMES-CLEAN-WEATHER-V21 SCRIPT */
+/* END DNDGAMES-WEATHER-LOCATION-V23 SCRIPT */

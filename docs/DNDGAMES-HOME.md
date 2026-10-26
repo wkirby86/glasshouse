@@ -1,59 +1,48 @@
-# D&D Games Home Edition v2.2
+# D&D Games Home Edition v2.3
 
-A presentation customisation of Glasshouse Home maintained in the wkirby86/glasshouse fork. It is not affiliated with the upstream maintainer and does not replace the rooted TV's underlying LG firmware.
+Aesthetic changes to the Glasshouse Home screen, with a configurable weather card. This fork is not an official upstream release and does not replace webOS. Glasshouse's backend, privacy controls, app catalogue, hidden-item settings and Home takeover remain intact. A small remote-focus bridge is added to the Home view; this is not a claim of zero interaction changes.
 
-## Differences from stock Home
+## Change the weather location
 
-| Area | Home edition |
-| --- | --- |
-| App/input rows | Bottom-stacked; short rows centred; longer rows retain scrolling |
-| Clock/date | Smaller, top right, right-aligned |
-| Weather | Top-left card for Staines-upon-Thames, UK; Celsius, mph, Europe/London |
-| Row headings | Hidden in normal viewing; restored in Arrange mode because they contain sorting controls |
-| Tiles | Rounded, translucent panels with focus using the configured accent colour |
-| Last-opened / picture-information panel | Hidden visually, not deleted from the DOM |
-| Wallpaper | Existing Glasshouse time slots and uploaded pictures retained; no photos included |
-| Hidden apps | Existing filtering retained; Arrange mode still intentionally reveals hidden tiles |
-| Home takeover, server routes, privacy controls | Not changed by this customisation |
+On the **TV's Glasshouse Home**, select **Change** in the weather card. Enter a town or postcode, press **Search**, choose the result with the correct region and country, then choose **Save location**. Search results come from Open-Meteo/GeoNames; postcode coverage varies, so try the nearest town when a postcode returns nothing. There is no automatic geolocation and no sign-in/API key embedded in the source.
 
-The saved row order is respected. To place Inputs above Apps, use the existing arrangement controls. The theme does not rewrite home.json or choose the user's pinned applications.
+- Magic Remote pointer/mouse: click Change and the form controls.
+- Directional remote: Up from the top visible dock row highlights Change; OK opens settings. Blue is a shortcut outside Arrange/Recents.
+- In the dialog: arrows navigate buttons/results, OK selects, Back/Escape cancels. Enter in the search field searches. A keyboard or the TV's on-screen text input enters the query. Actual webOS on-screen keyboard behaviour requires device testing.
+- Selecting a result is not a save. Cancel leaves the current location unchanged.
+- Existing Staines users stay on Staines unless they save a different result. Units remain Celsius and mph; the selected location supplies its forecast timezone. The TV clock itself is unchanged.
 
-## Weather, privacy and limitations
+## Persistence and privacy
 
-Weather comes from direct HTTPS calls to Open-Meteo. No account/key is embedded. Normal refresh is every 15 minutes while visible; retry and labelled cached-data fallbacks remain in the widget. The core launcher should keep working during a forecast failure. External service availability, TLS and CORS support still need checking on the target TV.
+Location is saved in **localStorage belonging to the Home view on that TV**, under `dnd.glasshouse.weather.settings.v1`. It is NOT written to `home.json`, the dashboard configuration, Git or a cloud account. Changing location in a browser on your PC only changes that browser's storage, not the television. Clearing the Home webview's data, reinstalling its web app or changing its origin may reset the preference to Staines. Glasshouse server backups do not necessarily include this browser-local preference.
 
-There is **no location picker, automatic geolocation or dashboard weather toggle**. Staines is a town-centre coordinate, not a residential address. To change location, edit the coordinates/timezone/cache key in `customizations/dndgames-home/source/weather.js` and the visible labels in `source/weather-card.html`, rebuild and test. Merely changing a README or manifest label does not change the forecast.
+Forecasts are cached per coordinates/timezone/units. Saving a new location clears the old active forecast cache and invalidates in-flight requests before showing fresh data. Invalid stored data falls back to the default. A storage failure is shown explicitly rather than falsely claiming the setting was saved.
 
-The provider sees the requested location and public connection IP. No Glasshouse token, app list or private wallpaper is supplied by the widget. Attribution appears in the card: Open-Meteo / CC BY 4.0. See https://open-meteo.com/en/docs and https://open-meteo.com/en/terms for service conditions; the free endpoint is not a blanket commercial-use entitlement.
+Open-Meteo receives the typed search and selected forecast coordinates, as well as the connection IP. The widget sends neither app lists, wallpaper images nor Glasshouse credentials; cross-site requests use no credential headers. Searches happen only on Search/Enter. Forecasts refresh every 15 minutes while visible, with retry/backoff and labelled stale data. Internet/TLS/CORS availability needs checking on the TV. The underlying launcher continues to operate if weather is unavailable.
 
-## Development and review
+Provider documentation: https://open-meteo.com/en/docs/geocoding-api and https://open-meteo.com/en/docs . Free endpoints are intended for non-commercial use; consult the provider's terms for distribution/use. Search data attribution: GeoNames. Forecast attribution: Open-Meteo / CC BY 4.0, retained in the card.
 
-Use a feature branch; keep the upstream `LICENSE` and other authors' notices. Theme source lives in `customizations/dndgames-home/source`. `server/assets/home.html` remains the served, self-contained view.
+## Visual layout retained
 
-The builder makes narrow additions to the current checkout rather than replacing it with a generated file from an older server. It stops when the reviewed scroll function or required DOM/style hooks differ. A clean source transformation is NOT proof that newer upstream code is behaviourally compatible. Run this checkout's upstream tests, the custom source tests and a browser/TV acceptance test before merging or releasing.
+Clock/date stay top right, weather top left, dock at the bottom. Row headings remain hidden normally and return in Arrange mode. Saved application visibility, row order, recents and wallpaper slots are preserved. The stock LG Home recovery tile remains available. No new server runtime dependency, service or boot hook is added.
 
-The integration adds no server runtime dependency and changes no backend or takeover file. It does not update upstream package.json version, release workflow, updater endpoint or GitHub Pages configuration. Upstream updates or redeployment can overwrite a local TV patch; maintain the fork and review future diffs.
+## Build and test
 
-## Deploy and reload
+```sh
+python3 customizations/dndgames-home/build.py check server/assets/home.html
+python3 customizations/dndgames-home/tests/test_theme.py
+# Optional browser tests need Python Playwright and Chromium:
+python3 customizations/dndgames-home/tests/location_browser_test.py
+```
 
-Do not deploy a newly ported fork merely because the Git check passed. Review and test it first using that checkout's own installation documentation. Never copy your whole `/var/lib/tvweb` directory to GitHub.
+The builder uses the current checkout's Home source, with narrow reversible additions. It refuses changed/unrecognised DOM, scroll or key-handler anchors rather than substituting an older upstream file. Run the current repository's upstream tests as well before release.
 
-The installed v0.118.0 setup in the development conversation needed a **full system reboot** to clear the running HTML/server cache after a file change. Returning to Home was not enough. Use the known Homebrew system reboot only when ready; no automated TV commands are included in this repository update kit.
+## Deployment and acceptance
 
-## Acceptance checklist
+This source update does not deploy to the TV. The accompanying guarded `install_tv.py` is a separate opt-in local command with backups and rollback. After changing the installed HTML, perform a full system reboot to refresh the known running server/page cache; merely returning Home was insufficient on the installed setup.
 
-- Clock/date top right, weather top left; no overlapping dock or portrait.
-- Apps and Inputs stay bottom-centred; long rows scroll to the focused tile.
-- Normal view respects hidden applications and the saved row order.
-- Arrange shows its heading/sort controls and hidden tiles, then saves normally.
-- Pointer, arrows, short/long OK, Back, recents and app/input launch still work.
-- Weather handles success, no network, timeout and stale cache without breaking Home.
-- Pressing Home from an app and after a full reboot uses the existing takeover.
+Test on the television: Change reachable by pointer and remote; keyboard enters query; results distinguish duplicate towns; Cancel leaves current weather; Save changes actual forecast coordinates and labels; location survives full reboot; Home button, HDMI/app launching, hidden apps, Arrange and Recents still work. Local browser tests mock APIs and storage and do not certify physical TV compatibility.
 
-## Rollback
+## Scope and acknowledgement
 
-For unpublished source changes, use Git to restore only the reviewed paths, or discard the dedicated fresh working copy after preserving any new work. After a published commit, prefer a `git revert` commit over rewriting shared history. This source kit does not alter your TV. A deployed television needs its own backed-up Home file restored and a reload/reboot as appropriate.
-
-## Attribution
-
-Glasshouse: https://github.com/rorygallagher2024/glasshouse (MIT; original notices retained). Weather: Open-Meteo and CC BY 4.0. No private images, fonts, credentials, TV configuration or installation-state files are included by this customisation.
+This fork focuses on Home-screen aesthetics and the weather UI. It does not change LG firmware, rooting, entitlement handling, Glasshouse privacy services or the Home takeover. Original Glasshouse copyright/licence and credits are retained. There is no weather enable/disable toggle in this release.

@@ -7,7 +7,7 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent
-TAG = 'DNDGAMES-HOME-FORK-V22'
+TAG = 'DNDGAMES-HOME-FORK-V23'
 CSS_START = '\n/* ' + TAG + ' CSS BEGIN */\n'
 CSS_END = '/* ' + TAG + ' CSS END */\n'
 CARD_START = '<!-- ' + TAG + ' CARD BEGIN -->\n'
@@ -39,6 +39,11 @@ def remove_block(text: str, start: str, end: str, replacement: str = '') -> str:
 
 def strip_theme(text: str) -> str:
     """Reverse only the delimited additions, keeping all other upstream bytes."""
+    if 'DNDGAMES-HOME-FORK-V22' in text and TAG not in text:
+        # Same reviewed envelope, before the location-control key hook existed.
+        text = text.replace('DNDGAMES-HOME-FORK-V22', TAG)
+    elif TAG in text:
+        text = replace_once(text, source('weather-key-hook.js'), '')
     text = remove_block(text, CSS_START, CSS_END)
     text = remove_block(text, CARD_START, CARD_END)
     text = remove_block(text, JS_START, JS_END)
@@ -51,7 +56,7 @@ def strip_theme(text: str) -> str:
 
 
 def add_theme(text: str) -> str:
-    if any(x in text for x in (TAG, 'DNDGAMES-STACKED-V2', 'DNDGAMES-CLEAN-WEATHER-V21', 'id="dnd-weather"')):
+    if any(x in text for x in (TAG, 'DNDGAMES-HOME-FORK-V22', 'DNDGAMES-STACKED-V2', 'DNDGAMES-CLEAN-WEATHER-V21', 'id="dnd-weather"')):
         raise ValueError('This Home page is already customised; do not layer patches.')
     # The scroll function is the only upstream JavaScript function we replace.
     old_scroll = source('original-scroll.js').rstrip('\n')
@@ -81,6 +86,9 @@ def add_theme(text: str) -> str:
     text = replace_once(text, old_scroll, SCROLL_START + new_scroll + SCROLL_END)
     text = replace_once(text, '<main id="rows"></main>',
                         CARD_START + source('weather-card.html') + CARD_END + '<main id="rows"></main>')
+    key_anchor = '    if (layoutBusy) { e.preventDefault(); return; }\n    var k = e.keyCode;'
+    text = replace_once(text, key_anchor, '    if (layoutBusy) { e.preventDefault(); return; }\n' +
+                        source('weather-key-hook.js') + '    var k = e.keyCode;')
     text = replace_once(text, '</body>', JS_START + source('weather.js') + JS_END + '</body>')
     if not re.search(r'<meta\s+[^>]*name=["\']referrer["\']', text, re.I):
         text = replace_once(text, '<head>', '<head>' + META)
@@ -112,7 +120,7 @@ def main() -> int:
                 raise ValueError('Supply a distinct output path; do not overwrite the input.')
             if a.output.exists():
                 raise ValueError('Output exists; choose a new path.')
-            original = strip_theme(text) if TAG in text else text
+            original = strip_theme(text) if TAG in text or 'DNDGAMES-HOME-FORK-V22' in text else text
             a.output.write_bytes(add_theme(original).encode('utf-8'))
             print('Created:', a.output)
         return 0

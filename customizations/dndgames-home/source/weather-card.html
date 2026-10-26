@@ -1,6 +1,6 @@
 <!-- DNDGAMES-CLEAN-WEATHER-V21 CARD -->
 <aside id="dnd-weather" aria-label="Weather for Staines-upon-Thames, UK" data-weather-state="loading">
-  <div class="wx-head"><span class="wx-place">Staines-upon-Thames</span><span class="wx-country">UK</span></div>
+  <div class="wx-head"><span class="wx-place" id="dnd-wx-place">Staines-upon-Thames</span><span class="wx-country" id="dnd-wx-country">UK</span><button id="dnd-wx-change" type="button" title="Change weather location (Blue button, or Up from top row then OK)" aria-haspopup="dialog" aria-controls="dnd-weather-settings">Change</button></div>
   <div class="wx-main">
     <span class="wx-icon" id="dnd-wx-icon" aria-hidden="true"></span>
     <span class="wx-temp" id="dnd-wx-temp">&mdash;</span>
@@ -11,3 +11,22 @@
   <div class="wx-foot"><span class="wx-stamp" id="dnd-wx-stamp">Waiting for data</span><span><a href="https://open-meteo.com/" target="_blank" rel="noopener noreferrer" tabindex="-1">Open-Meteo</a> &middot; <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener noreferrer" tabindex="-1">CC BY 4.0</a></span></div>
 </aside>
 <!-- END DNDGAMES-CLEAN-WEATHER-V21 CARD -->
+
+<!-- DNDGAMES-WEATHER-LOCATION-V23 DIALOG -->
+<div id="dnd-weather-settings" role="dialog" aria-modal="true" aria-labelledby="dnd-location-title" aria-describedby="dnd-location-current" aria-hidden="true" style="display:none">
+  <div class="dnd-location-panel">
+    <button id="dnd-location-close" type="button" aria-label="Close weather settings">&#215;</button>
+    <h2 id="dnd-location-title">Weather location</h2>
+    <p id="dnd-location-current"></p>
+    <label for="dnd-location-query">Town or postcode</label>
+    <div class="dnd-location-search-row">
+      <input id="dnd-location-query" type="text" maxlength="100" autocomplete="off" autocapitalize="words" placeholder="For example, Staines or Paris, France">
+      <button id="dnd-location-search" type="button">Search</button>
+    </div>
+    <p id="dnd-location-status" role="status" aria-live="polite"></p>
+    <div id="dnd-location-results" aria-label="Matching locations" aria-busy="false"></div>
+    <div class="dnd-location-actions"><button id="dnd-location-cancel" type="button">Cancel</button><button id="dnd-location-save" type="button" disabled>Save location</button></div>
+    <p class="dnd-location-privacy">Saves in this Home view on this TV. Search uses Open-Meteo / GeoNames. No automatic location detection.</p>
+  </div>
+</div>
+<!-- END DNDGAMES-WEATHER-LOCATION-V23 DIALOG -->

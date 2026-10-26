@@ -1,3 +1,14 @@
+# Home-theme changes
+
+## v2.3 - Selectable weather location
+
+- Add explicit town/postcode search and region/country result selection.
+- Save location in the TV Home view's localStorage; current Staines default retained.
+- Per-location cache, request cancellation and stale-response guards.
+- Add pointer/keyboard/remote access without altering root, backend or takeover.
+- Preserve v2.2 layout and hidden app selections.
+- No optional weather enable/disable control in this release.
+
 # D&D Games Home change history
 
 These are Home customisation versions, not upstream Glasshouse server releases.
