@@ -2,6 +2,21 @@
 
 # Glasshouse
 
+<!-- DNDGAMES-FORK-README-V22 -->
+## D&D Games Home Edition - v2.2
+
+This is **wkirby86's custom Home-screen fork** of [Glasshouse by rorygallagher2024](https://github.com/rorygallagher2024/glasshouse), not an official upstream release. The core dashboard, privacy tools and Home takeover remain upstream Glasshouse.
+
+The Home edition adds a bottom-stacked dock, centred short tile rows, translucent rounded tiles, hidden normal-view row headings, a smaller **top-right clock**, and a **top-left weather card**. It retains existing application visibility, row order, wallpaper uploads and remote-control logic, except for the reviewed short-row centring adjustment.
+
+**Weather in this release is fixed to Staines-upon-Thames, UK (Celsius / mph). There is no location selector.** Unlike the local-only core, the optional-to-use Home interface's weather widget makes direct HTTPS requests to Open-Meteo and needs internet access. It does not send TV credentials, application lists or photographs; the provider receives the forecast location and the connection's public IP. Weather data is model-based and attributed to Open-Meteo under CC BY 4.0. The widget itself starts automatically while this customised Home view is open; there is no on/off dashboard control in v2.2.
+
+See [the Home-edition guide](docs/DNDGAMES-HOME.md), [change history](customizations/dndgames-home/CHANGELOG.md), and [editable source and build instructions](customizations/dndgames-home/README.md). **2.2 is the Home theme version, not the Glasshouse server version.** Preserve the upstream licence and safety guidance below. Re-run tests when porting to newer upstream versions; a source check is not TV compatibility certification.
+
+---
+<!-- END DNDGAMES-FORK-README-V22 -->
+
+
 **Own the glass.** A dashboard, privacy controls and Home Assistant bridge for rooted LG webOS TVs.
 
 > [!NOTE]
