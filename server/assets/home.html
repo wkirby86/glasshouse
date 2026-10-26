@@ -210,7 +210,8 @@ body{font-family:'Manrope',sans-serif;color:#ece7df;-webkit-font-smoothing:antia
 /* Applied in scrollTrack only when the whole row fits; scrolling stays unchanged otherwise. */
 .track.dnd-centered{-webkit-justify-content:center;justify-content:center}
 .tile{border-radius:18px;margin-right:12px;background:rgba(20,15,29,.45);outline-width:2px}
-.tile.focus{background:rgba(34,25,48,.86);outline-color:#e9ad55}
+/* Inherit the stock focus outline: applyColours() owns the accent, including its default. */
+.tile.focus{background:rgba(34,25,48,.86)}
 .app{width:160px;padding:12px}
 .app img,.app .mono{width:100px;height:100px;border-radius:16px}
 .app .mono{line-height:100px}
@@ -329,35 +330,36 @@ body[data-dnd-weather-focus="1"] #rows .tile.focus{outline-color:transparent}
   </section>
 
   <!-- DNDGAMES-HOME-FORK-V23 CARD BEGIN -->
+<!-- CI compatibility v2.3.1: dynamic fields are populated by translated JavaScript. -->
 <!-- DNDGAMES-CLEAN-WEATHER-V21 CARD -->
-<aside id="dnd-weather" aria-label="Weather for Staines-upon-Thames, UK" data-weather-state="loading">
-  <div class="wx-head"><span class="wx-place" id="dnd-wx-place">Staines-upon-Thames</span><span class="wx-country" id="dnd-wx-country">UK</span><button id="dnd-wx-change" type="button" title="Change weather location (Blue button, or Up from top row then OK)" aria-haspopup="dialog" aria-controls="dnd-weather-settings">Change</button></div>
+<aside id="dnd-weather" aria-label="" data-weather-state="loading">
+  <div class="wx-head"><span class="wx-place" id="dnd-wx-place">&mdash;</span><span class="wx-country" id="dnd-wx-country">&mdash;</span><button id="dnd-wx-change" type="button" title="Change weather location (Blue button, or Up from top row then OK)" data-t-title="home.weather.changeHelp" aria-haspopup="dialog" aria-controls="dnd-weather-settings" data-t="home.weather.change">Change</button></div>
   <div class="wx-main">
     <span class="wx-icon" id="dnd-wx-icon" aria-hidden="true"></span>
     <span class="wx-temp" id="dnd-wx-temp">&mdash;</span>
-    <div class="wx-desc"><div class="wx-condition" id="dnd-wx-condition">Loading weather</div><div class="wx-feels" id="dnd-wx-feels">Celsius &middot; mph</div></div>
+    <div class="wx-desc"><div class="wx-condition" id="dnd-wx-condition">&mdash;</div><div class="wx-feels" id="dnd-wx-feels">&mdash;</div></div>
   </div>
-  <div class="wx-detail" id="dnd-wx-detail">Connecting to Open-Meteo&hellip;</div>
+  <div class="wx-detail" id="dnd-wx-detail">&mdash;</div>
   <div class="wx-days" id="dnd-wx-days"></div>
-  <div class="wx-foot"><span class="wx-stamp" id="dnd-wx-stamp">Waiting for data</span><span><a href="https://open-meteo.com/" target="_blank" rel="noopener noreferrer" tabindex="-1">Open-Meteo</a> &middot; <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener noreferrer" tabindex="-1">CC BY 4.0</a></span></div>
+  <div class="wx-foot"><span class="wx-stamp" id="dnd-wx-stamp">&mdash;</span><span><a href="https://open-meteo.com/" target="_blank" rel="noopener noreferrer" tabindex="-1" data-t="home.weather.provider">Open-Meteo</a> &middot; <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener noreferrer" tabindex="-1" data-t="home.weather.licence">CC BY 4.0</a></span></div>
 </aside>
 <!-- END DNDGAMES-CLEAN-WEATHER-V21 CARD -->
 
 <!-- DNDGAMES-WEATHER-LOCATION-V23 DIALOG -->
 <div id="dnd-weather-settings" role="dialog" aria-modal="true" aria-labelledby="dnd-location-title" aria-describedby="dnd-location-current" aria-hidden="true" style="display:none">
   <div class="dnd-location-panel">
-    <button id="dnd-location-close" type="button" aria-label="Close weather settings">&#215;</button>
-    <h2 id="dnd-location-title">Weather location</h2>
+    <button id="dnd-location-close" type="button" aria-label="Close weather settings" data-t-aria-label="home.weather.closeSettings">&#215;</button>
+    <h2 id="dnd-location-title" data-t="home.weather.locationTitle">Weather location</h2>
     <p id="dnd-location-current"></p>
-    <label for="dnd-location-query">Town or postcode</label>
+    <label for="dnd-location-query" data-t="home.weather.locationQuery">Town or postcode</label>
     <div class="dnd-location-search-row">
-      <input id="dnd-location-query" type="text" maxlength="100" autocomplete="off" autocapitalize="words" placeholder="For example, Staines or Paris, France">
-      <button id="dnd-location-search" type="button">Search</button>
+      <input id="dnd-location-query" type="text" maxlength="100" autocomplete="off" autocapitalize="words" placeholder="For example, Staines or Paris, France" data-t-placeholder="home.weather.locationExample">
+      <button id="dnd-location-search" type="button" data-t="home.weather.search">Search</button>
     </div>
     <p id="dnd-location-status" role="status" aria-live="polite"></p>
-    <div id="dnd-location-results" aria-label="Matching locations" aria-busy="false"></div>
-    <div class="dnd-location-actions"><button id="dnd-location-cancel" type="button">Cancel</button><button id="dnd-location-save" type="button" disabled>Save location</button></div>
-    <p class="dnd-location-privacy">Saves in this Home view on this TV. Search uses Open-Meteo / GeoNames. No automatic location detection.</p>
+    <div id="dnd-location-results" aria-label="Matching locations" data-t-aria-label="home.weather.matchingLocations" aria-busy="false"></div>
+    <div class="dnd-location-actions"><button id="dnd-location-cancel" type="button" data-t="home.weather.cancel">Cancel</button><button id="dnd-location-save" type="button" disabled data-t="home.weather.saveLocation">Save location</button></div>
+    <p class="dnd-location-privacy" data-t="home.weather.privacy">Saves in this Home view on this TV. Search uses Open-Meteo / GeoNames. No automatic location detection.</p>
   </div>
 </div>
 <!-- END DNDGAMES-WEATHER-LOCATION-V23 DIALOG -->
@@ -1387,6 +1389,7 @@ body[data-dnd-weather-focus="1"] #rows .tile.focus{outline-color:transparent}
 /* DNDGAMES-WEATHER-LOCATION-V23 SCRIPT
  * Weather preferences live in this Home webview's localStorage, not home.json.
  * Search is explicit, via Open-Meteo/GeoNames; no GPS, API key or credentials.
+ * Display text uses Glasshouse t() keys with English fallbacks (CI fix v2.3.1).
  * ES5. Core catalogue, hidden items, takeover and heartbeat stay independent.
  */
 (function () {
@@ -1444,8 +1447,8 @@ body[data-dnd-weather-focus="1"] #rows .tile.focus{outline-color:transparent}
   function renderPlace() {
     text('place', location.name); text('country', location.countryCode === 'GB' ? 'UK' : location.countryCode);
     el('place').setAttribute('title', label(location));
-    card.setAttribute('aria-label', 'Weather for ' + label(location));
-    document.getElementById('dnd-location-current').textContent = 'Current: ' + label(location);
+    card.setAttribute('aria-label', t('home.weather.forLocation', 'Weather for {location}', { location: label(location) }));
+    document.getElementById('dnd-location-current').textContent = t('home.weather.currentLocation', 'Current: {location}', { location: label(location) });
   }
   function forecastURL(p) {
     return 'https://api.open-meteo.com/v1/forecast?latitude=' + encodeURIComponent(p.latitude) +
@@ -1471,20 +1474,20 @@ body[data-dnd-weather-focus="1"] #rows .tile.focus{outline-color:transparent}
   }
   function weather(code, day) {
     switch (code) {
-      case 0: return [day === 0 ? 'Clear night' : 'Clear skies', day === 0 ? 'moon' : 'sun'];
-      case 1: return ['Mainly clear', day === 0 ? 'moon' : 'sun'];
-      case 2: return ['Partly cloudy', 'partly'];
-      case 3: return ['Overcast', 'cloud'];
-      case 45: case 48: return ['Fog', 'fog'];
-      case 51: case 53: case 55: return ['Drizzle', 'rain'];
-      case 56: case 57: return ['Freezing drizzle', 'rain'];
-      case 61: case 63: case 65: return ['Rain', 'rain'];
-      case 66: case 67: return ['Freezing rain', 'rain'];
-      case 71: case 73: case 75: case 77: return ['Snow', 'snow'];
-      case 80: case 81: case 82: return ['Rain showers', 'rain'];
-      case 85: case 86: return ['Snow showers', 'snow'];
-      case 95: case 96: case 99: return ['Thunderstorms', 'storm'];
-      default: return ['Weather', 'cloud'];
+      case 0: return [day === 0 ? t('home.weather.clearNight', 'Clear night') : t('home.weather.clearSkies', 'Clear skies'), day === 0 ? 'moon' : 'sun'];
+      case 1: return [t('home.weather.mainlyClear', 'Mainly clear'), day === 0 ? 'moon' : 'sun'];
+      case 2: return [t('home.weather.partlyCloudy', 'Partly cloudy'), 'partly'];
+      case 3: return [t('home.weather.overcast', 'Overcast'), 'cloud'];
+      case 45: case 48: return [t('home.weather.fog', 'Fog'), 'fog'];
+      case 51: case 53: case 55: return [t('home.weather.drizzle', 'Drizzle'), 'rain'];
+      case 56: case 57: return [t('home.weather.freezingDrizzle', 'Freezing drizzle'), 'rain'];
+      case 61: case 63: case 65: return [t('home.weather.rain', 'Rain'), 'rain'];
+      case 66: case 67: return [t('home.weather.freezingRain', 'Freezing rain'), 'rain'];
+      case 71: case 73: case 75: case 77: return [t('home.weather.snow', 'Snow'), 'snow'];
+      case 80: case 81: case 82: return [t('home.weather.rainShowers', 'Rain showers'), 'rain'];
+      case 85: case 86: return [t('home.weather.snowShowers', 'Snow showers'), 'snow'];
+      case 95: case 96: case 99: return [t('home.weather.thunderstorms', 'Thunderstorms'), 'storm'];
+      default: return [t('home.weather.generic', 'Weather'), 'cloud'];
     }
   }
   function icon(kind) {
@@ -1502,7 +1505,9 @@ body[data-dnd-weather-focus="1"] #rows .tile.focus{outline-color:transparent}
   }
   function dayName(s) {
     var m = /^(\d{4})-(\d\d)-(\d\d)$/.exec(s || '');
-    return m ? ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][new Date(+m[1], +m[2]-1, +m[3], 12).getDay()] : '\u2014';
+    return m ? [t('home.weather.sun', 'Sun'), t('home.weather.mon', 'Mon'), t('home.weather.tue', 'Tue'),
+      t('home.weather.wed', 'Wed'), t('home.weather.thu', 'Thu'), t('home.weather.fri', 'Fri'),
+      t('home.weather.sat', 'Sat')][new Date(+m[1], +m[2]-1, +m[3], 12).getDay()] : '\u2014';
   }
   function add(parent, cls, value) {
     var e = document.createElement('span'); e.className = cls;
@@ -1517,14 +1522,14 @@ body[data-dnd-weather-focus="1"] #rows .tile.focus{outline-color:transparent}
     card.setAttribute('data-weather-state', cached ? 'cached' : 'ready');
     text('temp', degrees(c.temperature_2m) + 'C');
     text('condition', report[0]); el('icon').innerHTML = icon(report[1]);
-    text('feels', numeric(c.apparent_temperature) ? 'Feels like ' + degrees(c.apparent_temperature) : 'Model-based conditions');
+    text('feels', numeric(c.apparent_temperature) ? t('home.weather.feelsLike', 'Feels like {temperature}', { temperature: degrees(c.apparent_temperature) }) : t('home.weather.modelConditions', 'Model-based conditions'));
     var detail = [];
     if (daily.temperature_2m_max && daily.temperature_2m_min && daily.time && daily.time[0] === c.time.slice(0,10)) {
-      detail.push('H ' + degrees(daily.temperature_2m_max[0]) + '  L ' + degrees(daily.temperature_2m_min[0]));
+      detail.push(t('home.weather.highLow', 'H {high}  L {low}', { high: degrees(daily.temperature_2m_max[0]), low: degrees(daily.temperature_2m_min[0]) }));
     }
-    if (numeric(c.wind_speed_10m) && r.current_units.wind_speed_10m === 'mp/h') detail.push('Wind ' + Math.round(c.wind_speed_10m) + ' mph');
+    if (numeric(c.wind_speed_10m) && r.current_units.wind_speed_10m === 'mp/h') detail.push(t('home.weather.windMph', 'Wind {speed} mph', { speed: Math.round(c.wind_speed_10m) }));
     // Some API versions use 'mph' instead of 'mp/h'.
-    if (numeric(c.wind_speed_10m) && r.current_units.wind_speed_10m === 'mph') detail.push('Wind ' + Math.round(c.wind_speed_10m) + ' mph');
+    if (numeric(c.wind_speed_10m) && r.current_units.wind_speed_10m === 'mph') detail.push(t('home.weather.windMph', 'Wind {speed} mph', { speed: Math.round(c.wind_speed_10m) }));
     text('detail', detail.join('  \u00b7  '));
     var days = el('days'); days.innerHTML = '';
     if (daily.time && daily.weather_code && daily.temperature_2m_max && daily.temperature_2m_min) {
@@ -1539,21 +1544,21 @@ body[data-dnd-weather-focus="1"] #rows .tile.focus{outline-color:transparent}
       }
     }
     days.style.display = days.childNodes.length ? '' : 'none';
-    text('stamp', (cached ? 'Cached \u00b7 ' : 'Updated ') + clockStamp(r));
-    card.setAttribute('title', 'Model-based weather for ' + location.name + '. Times: ' + location.timezone + '.');
+    text('stamp', cached ? t('home.weather.cachedAt', 'Cached \u00b7 {time}', { time: clockStamp(r) }) : t('home.weather.updatedAt', 'Updated {time}', { time: clockStamp(r) }));
+    card.setAttribute('title', t('home.weather.modelTitle', 'Model-based weather for {location}. Times: {timezone}.', { location: location.name, timezone: location.timezone }));
   }
   function unavailable() {
     card.setAttribute('data-weather-state', 'unavailable');
-    text('temp', '\u2014'); text('condition', 'Weather unavailable');
-    text('feels', 'Celsius \u00b7 mph'); text('detail', 'Automatic retry; Home still works');
-    text('stamp', 'No recent data'); el('days').innerHTML = ''; el('icon').innerHTML = icon('cloud');
+    text('temp', '\u2014'); text('condition', t('home.weather.unavailable', 'Weather unavailable'));
+    text('feels', t('home.weather.units', 'Celsius \u00b7 mph')); text('detail', t('home.weather.retry', 'Automatic retry; Home still works'));
+    text('stamp', t('home.weather.noData', 'No recent data')); el('days').innerHTML = ''; el('icon').innerHTML = icon('cloud');
   }
 
   function loading() {
     card.setAttribute('data-weather-state', 'loading');
-    text('temp', '\u2014'); text('condition', 'Loading weather');
-    text('feels', 'Celsius \u00b7 mph'); text('detail', 'Connecting to Open-Meteo\u2026');
-    text('stamp', 'Waiting for data'); el('days').innerHTML = ''; el('icon').innerHTML = icon('cloud');
+    text('temp', '\u2014'); text('condition', t('home.weather.loading', 'Loading weather'));
+    text('feels', t('home.weather.units', 'Celsius \u00b7 mph')); text('detail', t('home.weather.connecting', 'Connecting to Open-Meteo\u2026'));
+    text('stamp', t('home.weather.waiting', 'Waiting for data')); el('days').innerHTML = ''; el('icon').innerHTML = icon('cloud');
   }
   function readCache() {
     saved = null;
@@ -1646,7 +1651,7 @@ body[data-dnd-weather-focus="1"] #rows .tile.focus{outline-color:transparent}
     saveButton.disabled = true; resultsBox.innerHTML = ''; searchInput.value = location.name;
     panel.style.display = 'block'; panel.setAttribute('aria-hidden', 'false');
     document.body.setAttribute('data-dnd-weather-focus', '1');
-    renderPlace(); status('Enter a town or postcode, then choose Search.');
+    renderPlace(); status(t('home.weather.searchHint', 'Enter a town or postcode, then choose Search.'));
     searchInput.focus(); searchInput.select();
   }
   function closeDialog(restoreFocus) {
@@ -1660,16 +1665,16 @@ body[data-dnd-weather-focus="1"] #rows .tile.focus{outline-color:transparent}
     if (!dialogOpen) return;
     var query = searchInput.value.replace(/^\s+|\s+$/g, '');
     if (query.length < 2 || query.length > 100 || /[\x00-\x1f\x7f]/.test(query)) {
-      status('Use 2 to 100 characters for a town or postcode.', true); return;
+      status(t('home.weather.queryLength', 'Use 2 to 100 characters for a town or postcode.'), true); return;
     }
     if (Date.now() < searchBlockedUntil) {
-      status('Search is temporarily limited. Please try again in a minute.', true); return;
+      status(t('home.weather.searchLimited', 'Search is temporarily limited. Try again in a minute.'), true); return;
     }
     stopSearch();
     var token = searchRevision;
     selection = null; results = []; saveButton.disabled = true; resultsBox.innerHTML = '';
     searchButton.disabled = true; resultsBox.setAttribute('aria-busy', 'true');
-    status('Searching\u2026');
+    status(t('home.weather.searching', 'Searching\u2026'));
     var x, done = false;
     function complete(ok, response, code) {
       if (done || token !== searchRevision || !dialogOpen) return;
@@ -1677,8 +1682,8 @@ body[data-dnd-weather-focus="1"] #rows .tile.focus{outline-color:transparent}
       resultsBox.setAttribute('aria-busy', 'false');
       if (!ok) {
         if (code === 429) searchBlockedUntil = Date.now() + 60000;
-        status(code === 429 ? 'Search is temporarily limited. Try again in a minute.' :
-          'Location search is unavailable. Your saved location has not changed.', true);
+        status(code === 429 ? t('home.weather.searchLimited', 'Search is temporarily limited. Try again in a minute.') :
+          t('home.weather.searchUnavailable', 'Location search is unavailable. Your saved location has not changed.'), true);
         return;
       }
       var list = response.results || [];
@@ -1688,7 +1693,7 @@ body[data-dnd-weather-focus="1"] #rows .tile.focus{outline-color:transparent}
         if (validLocation(candidate)) results.push(cleanLocation(candidate));
       }
       if (!results.length) {
-        status('No matching locations. Try the nearest town, or add a country after a comma.'); return;
+        status(t('home.weather.noMatches', 'No matching locations. Try the nearest town, or add a country after a comma.')); return;
       }
       results.forEach(function (p, index) {
         var b = document.createElement('button'); b.type = 'button'; b.className = 'dnd-location-result';
@@ -1699,7 +1704,7 @@ body[data-dnd-weather-focus="1"] #rows .tile.focus{outline-color:transparent}
         b.appendChild(title); b.appendChild(sub);
         b.addEventListener('click', function () { choose(index); }); resultsBox.appendChild(b);
       });
-      status('Choose a location, then select Save location. Nothing changes until you save.');
+      status(t('home.weather.chooseLocation', 'Choose a location, then select Save location. Nothing changes until you save.'));
       var active = document.activeElement;
       if (active === searchInput || active === searchButton || active === document.body) resultsBox.firstChild.focus();
     }
@@ -1723,7 +1728,7 @@ body[data-dnd-weather-focus="1"] #rows .tile.focus{outline-color:transparent}
     var buttons = resultsBox.querySelectorAll('button');
     for (var i = 0; i < buttons.length; i++) buttons[i].setAttribute('aria-pressed', i === index ? 'true' : 'false');
     saveButton.disabled = false;
-    status('Selected: ' + label(selection) + '. Select Save location to apply.');
+    status(t('home.weather.selectedLocation', 'Selected: {location}. Select Save location to apply.', { location: label(selection) }));
     saveButton.focus();
   }
   function saveLocation() {
@@ -1733,7 +1738,7 @@ body[data-dnd-weather-focus="1"] #rows .tile.focus{outline-color:transparent}
       localStorage.setItem(SETTINGS_KEY, encoded);
       if (localStorage.getItem(SETTINGS_KEY) !== encoded) throw new Error('Storage verification failed');
     } catch (ignore) {
-      status('This Home view cannot save preferences. Location unchanged. Check browser storage and retry.', true);
+      status(t('home.weather.storageUnavailable', 'This Home view cannot save preferences. Location unchanged. Check browser storage and retry.'), true);
       return;
     }
     applyLocation(next); closeDialog(true);
@@ -1794,7 +1799,7 @@ body[data-dnd-weather-focus="1"] #rows .tile.focus{outline-color:transparent}
   searchButton.addEventListener('click', searchLocations);
   searchInput.addEventListener('input', function () {
     stopSearch(); selection = null; results = []; saveButton.disabled = true; resultsBox.innerHTML = '';
-    status('Choose Search to find matching locations.');
+    status(t('home.weather.searchPrompt', 'Choose Search to find matching locations.'));
   });
   saveButton.addEventListener('click', saveLocation);
   document.getElementById('dnd-location-cancel').addEventListener('click', function () { closeDialog(true); });
